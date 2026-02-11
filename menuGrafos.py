@@ -79,7 +79,7 @@ class grapho:
         for fr , to in allRutas:
             camino = self.trayectoria_grado(fr,to)
             df.loc[len(df)] = [fr, to, self.obtener_grado_nodo(fr) , self.obtener_grado_nodo(to),"Si" if camino else "No" , len(camino) if camino else 0,set(camino) if camino else [],self.mostrarCaminoBonito(camino)]
-        print(df)
+        return(df)
 
     @property
     def obetner_numero_total_rutas(self):
