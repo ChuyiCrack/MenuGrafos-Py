@@ -1,4 +1,5 @@
 from math import factorial
+from matplotlib import pyplot as plt
 import pandas as pd
 from Grafo_7 import grafo7
 
@@ -280,3 +281,52 @@ class Grapho:
         h.total_rutas = total_rutas
         h.imprimir_rutas = imprimir_rutas
         return h
+
+
+    # graficas 
+
+
+    def graficar_knn_y_recta(self, dataset, Gi_nuevo, GF_nuevo, umbral=6):
+        # Separar puntos por clase (llego)
+        Gi_1, GF_1 = [], []
+        Gi_0, GF_0 = [], []
+
+        # CORRECCIÓN: Usamos iterrows() para obtener el índice y la fila
+        for index, fila in dataset.iterrows():
+            # Ahora 'fila' es un objeto Series y puedes acceder por nombre
+            Gi = fila['Grado Origen']
+            GF = fila['Grado Destino'] # Nota: En tu tabla se llama 'Grado Destino', no 'Grado Final'
+            llego = fila['Llego']
+
+            if llego == "Si":
+                Gi_1.append(Gi); GF_1.append(GF)
+            else:
+                Gi_0.append(Gi); GF_0.append(GF)
+
+        # --- imprimir la ecuación de la recta heurística ---
+        print(f"Recta heurística: Gi + GF = {umbral}")
+        print(f"En forma despejada: GF = {umbral} - Gi")
+
+        # --- graficar puntos ---
+        plt.figure(figsize=(8, 6))
+        plt.scatter(Gi_1, GF_1, color='blue', marker='o', label="Llegó (Si)")
+        plt.scatter(Gi_0, GF_0, color='red', marker='x', label="No llegó (No)")
+
+        # Punto nuevo
+        plt.scatter([Gi_nuevo], [GF_nuevo], color='green', marker='*', s=200, label="Nuevo punto")
+
+        # --- graficar la recta ---
+        # Usamos los valores del dataset para el rango
+        gi_min = dataset['Grado Origen'].min()
+        gi_max = dataset['Grado Origen'].max()
+
+        x_vals = [gi_min, gi_max]
+        y_vals = [umbral - x for x in x_vals]
+        plt.plot(x_vals, y_vals, color='black', linestyle='--', label=f"Umbral (x+y={umbral})")
+
+        plt.xlabel("Grado Origen (Gi)")
+        plt.ylabel("Grado Destino (GF)")
+        plt.title("Clasificación de Rutas por Grados")
+        plt.legend()
+        plt.grid(True, linestyle=':', alpha=0.6)
+        plt.show()
