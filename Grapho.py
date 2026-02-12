@@ -124,98 +124,107 @@ class Grapho:
         return mejor_arista,mejor_valor
 
     # trayectorias
+    @property
+    def trayectoria(self):
 
-    # retorna el camino entre dos nodos usando un recorrido voraz, o None si no se encuentra un camino
-    def trayectoria(self, inicio, fin):
-        if inicio == fin:
-            return [inicio]
-        
-        camino = [inicio]
-        actual = inicio
-        usadas = set()   # Creando un conjunto nota: los conjuntos no aceptan repeticiones
+        # retorna el camino entre dos nodos usando un recorrido voraz, o None si no se encuentra un camino
+        def voraz(inicio, fin):
+            if inicio == fin:
+                return [inicio]
+            
+            camino = [inicio]
+            actual = inicio
+            usadas = set()   # Creando un conjunto nota: los conjuntos no aceptan repeticiones
 
-        while actual != fin:
-            avance = False
-            for a in actual.conexiones:
-                if a in usadas:
-                    continue#Brincar a la siguiente iteraccion delciclo
+            while actual != fin:
+                avance = False
+                for a in actual.conexiones:
+                    if a in usadas:
+                        continue#Brincar a la siguiente iteraccion delciclo
 
-                # como el grafo es no  dirigido, tomo el otro extremo
-                if a.origen == actual:
-                    siguiente = a.destino
-                else:
-                    siguiente = a.origen
+                    # como el grafo es no  dirigido, tomo el otro extremo
+                    if a.origen == actual:
+                        siguiente = a.destino
+                    else:
+                        siguiente = a.origen
 
-                usadas.add(a)
+                    usadas.add(a)
+                    camino.append(siguiente)
+                    actual = siguiente
+                    avance = True
+                    break   # se toma la primera arista disponible
+
+                if not avance:
+                    return None  #No hay trayectoria. ya no avanzo
+
+            return camino
+
+        # retorna el camino entre dos nodos usando una heuristica de nodo no visitado, o None si no se encuentra un camino
+        def no_visitado(nodo_inicio, nodo_final):
+            visitados = set()
+            recorrido = [nodo_inicio]
+
+            def no_visitado(nodo):
+                if nodo == nodo_final:
+                    return True
+
+                visitados.add(nodo)
+
+                for arista in nodo.conexiones:
+                    sig = self.obtener_siguiente(arista,nodo)
+
+                    if sig not in visitados:
+                        recorrido.append(sig)
+                        print(recorrido)
+                        if no_visitado(sig):         
+                            return True
+
+                        recorrido.pop()      
+
+                return False
+
+            if not no_visitado(nodo_inicio):
+                return None
+            return recorrido
+
+        # retorna el camino entre dos nodos usando euritstica de mayor grado, o None si no se encuentra un camino
+        def mayor_grado(inicio, fin, modo="max"):
+            if inicio == fin:
+                return [inicio]
+
+            camino = [inicio]
+            actual = inicio
+            usadas = set()  # aristas ya usadas (para no repetir)
+
+            while actual != fin:
+                # aristas disponibles desde el nodo actual
+                candidatas=self.obtener_candidatas(actual,usadas)#candidatas = [ar for ar in actual.conexiones if ar not in usadas]
+                if not candidatas:
+                    return None
+                # elegir la mejor arista según la heurística de grado
+                mejor_arista = None
+                mejor_valor = None
+
+                for ar in candidatas:
+                    # grafo no dirigido: tomar el otro extremo
+                    #siguiente = ar.destino if ar.origen == actual else ar.origen
+                    siguiente = self.obtener_siguiente(ar,actual)
+                    valor = self.grado_restante(siguiente,usadas)  # heurística
+                    mejor_arista,mejor_valor = self.mejor_arista(ar,valor,mejor_arista,mejor_valor)
+                # aplicar el paso elegido
+                usadas.add(mejor_arista)
+                siguiente = self.obtener_siguiente(mejor_arista,actual)
                 camino.append(siguiente)
                 actual = siguiente
-                avance = True
-                break   # se toma la primera arista disponible
 
-            if not avance:
-                return None  #No hay trayectoria. ya no avanzo
-
-        return camino
-
-    # retorna el camino entre dos nodos usando una heuristica de nodo no visitado, o None si no se encuentra un camino
-    def trayectoria_no_visitado(self, nodo_inicio, nodo_final):
-        visitados = set()
-        recorrido = [nodo_inicio]
-
-        def no_visitado(nodo):
-            if nodo == nodo_final:
-                return True
-
-            visitados.add(nodo)
-
-            for arista in nodo.conexiones:
-                sig = self.obtener_siguiente(arista,nodo)
-
-                if sig not in visitados:
-                    recorrido.append(sig)
-                    print(recorrido)
-                    if no_visitado(sig):         
-                        return True
-
-                    recorrido.pop()      
-
-            return False
-
-        if not no_visitado(nodo_inicio):
-            return None
-        return recorrido
-
-    # retorna el camino entre dos nodos usando euritstica de mayor grado, o None si no se encuentra un camino
-    def trayectoria_mayor_grado(self, inicio, fin, modo="max"):
-        if inicio == fin:
-            return [inicio]
-
-        camino = [inicio]
-        actual = inicio
-        usadas = set()  # aristas ya usadas (para no repetir)
-
-        while actual != fin:
-            # aristas disponibles desde el nodo actual
-            candidatas=self.obtener_candidatas(actual,usadas)#candidatas = [ar for ar in actual.conexiones if ar not in usadas]
-            if not candidatas:
-                return None
-            # elegir la mejor arista según la heurística de grado
-            mejor_arista = None
-            mejor_valor = None
-
-            for ar in candidatas:
-                # grafo no dirigido: tomar el otro extremo
-                #siguiente = ar.destino if ar.origen == actual else ar.origen
-                siguiente = self.obtener_siguiente(ar,actual)
-                valor = self.grado_restante(siguiente,usadas)  # heurística
-                mejor_arista,mejor_valor = self.mejor_arista(ar,valor,mejor_arista,mejor_valor)
-            # aplicar el paso elegido
-            usadas.add(mejor_arista)
-            siguiente = self.obtener_siguiente(mejor_arista,actual)
-            camino.append(siguiente)
-            actual = siguiente
-
-        return camino
+            return camino
+        
+        class Helper: pass
+        h = Helper()
+        h.voraz = voraz
+        h.no_visitado = no_visitado
+        h.mayor_grado = mayor_grado
+        return h
     
 
     # rutas
@@ -246,7 +255,7 @@ class Grapho:
             df = pd.DataFrame(columns=["Origen" , "Destino" , "Grado Origen" , "Grado Destino" , "Llego" , "LongCamino" , "Nodos Explorados" , "Ruta"])
             allRutas = all()
             for fr , to in allRutas:
-                camino = self.trayectoria_mayor_grado(fr,to)
+                camino = self.trayectoria.mayor_grado(fr,to)
                 df.loc[len(df)] = [fr, to, self.obtener_grado_nodo(fr) , self.obtener_grado_nodo(to),"Si" if camino else "No" , len(camino) if camino else 0,set(camino) if camino else [],self.camino_string(camino)]
             return(df)
         
@@ -258,7 +267,7 @@ class Grapho:
         def imprimir_rutas():
             allRutas = all()
             for fr , to in allRutas:
-                camino = self.trayectoria_mayor_grado(fr,to)
+                camino = self.trayectoria.mayor_grado(fr,to)
                 print(f"Ruta ({fr,to}) = {self.camino_string(camino)}")
 
 
