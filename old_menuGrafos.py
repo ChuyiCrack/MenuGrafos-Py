@@ -270,4 +270,3 @@ class grapho:
                             mejor_valor = valor
                
                 return mejor_arista,mejor_valor
-
