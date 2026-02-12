@@ -10,15 +10,17 @@ def grafo7(miGrafo):
 
     miGrafo.agregar_arista(A,B)
     miGrafo.agregar_arista(A,D)
+    miGrafo.agregar_arista(A,C)
+    miGrafo.agregar_arista(A,G)
     miGrafo.agregar_arista(B,C)
     miGrafo.agregar_arista(C,D)
     miGrafo.agregar_arista(C,E)
     miGrafo.agregar_arista(E,F)
-    miGrafo.agregar_arista(F,G)
     miGrafo.agregar_arista(E,H)
-    miGrafo.agregar_arista(A,G)
-    miGrafo.agregar_arista(C,H)
-    miGrafo.agregar_arista(G,H)
+    miGrafo.agregar_arista(E,G)
+    miGrafo.agregar_arista(H,G)
+    miGrafo.agregar_arista(F,G)
+
     
     miGrafo.actualizar_conexiones()
 
