@@ -32,6 +32,7 @@ class grapho:
     def obtener_grado_nodo(self,nodo:Nodo):
         return len(nodo.conexiones)
 
+
     def trayectoria_dfs(self, nodo_inicio, nodo_final):
         visitados = set()
         recorrido = [nodo_inicio]
