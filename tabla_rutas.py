@@ -13,7 +13,4 @@ df = grafo.rutas.tabla()
 grafoA = grafo.obtener_nodo("A")
 grafoH = grafo.obtener_nodo("H")
 
-gradoInicial = grafo.obtener_grado_nodo(grafoA)
-gradoFinal = grafo.obtener_grado_nodo(grafoH)
-
-grafo.graficar_knn_y_recta(df, gradoInicial, gradoFinal)
+grafo.graficar_knn_y_recta(df, grafoA.grado(), grafoH.grado())

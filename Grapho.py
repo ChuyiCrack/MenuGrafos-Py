@@ -17,6 +17,9 @@ class Grapho:
             self.conexiones = []
         def __repr__(self):
             return self.valor
+        
+        def grado(self):
+            return len(self.conexiones)
        
     class Arista:
         def __init__(self, origen, destino):
@@ -80,10 +83,6 @@ class Grapho:
                 return i
 
         return None
-    
-    # retorna el grado de un nodo
-    def obtener_grado_nodo(self,nodo:Nodo):
-        return len(nodo.conexiones)
 
     
     # retorna las aristas candidatas para avanzar desde un nodo dado, excluyendo las aristas ya usadas
@@ -253,11 +252,12 @@ class Grapho:
 
         # retorna un dataframe con todas las rutas posibles entre nodos, su grado de origen y destino, si se encontro una ruta usando la heuristica de mayor grado, la longitud de esa ruta, los nodos explorados y la ruta encontrada
         def tabla():
+            # TODO: distancia minima bfs al objetivo, profundidad bfs, vecinos comunes, ciclos del bfs (ciclos que tomo para terminar) 
             df = pd.DataFrame(columns=["Origen" , "Destino" , "Grado Origen" , "Grado Destino" , "Llego" , "LongCamino" , "Nodos Explorados" , "Ruta"])
             allRutas = all()
             for fr , to in allRutas:
                 camino = self.trayectoria.mayor_grado(fr,to)
-                df.loc[len(df)] = [fr, to, self.obtener_grado_nodo(fr) , self.obtener_grado_nodo(to),"Si" if camino else "No" , len(camino) if camino else 0,set(camino) if camino else [],self.camino_string(camino)]
+                df.loc[len(df)] = [fr, to, fr.grado() , to.grado(),"Si" if camino else "No" , len(camino) if camino else 0,set(camino) if camino else [],self.camino_string(camino)]
             return(df)
         
         # retorna el numero total de rutas posibles entre nodos
