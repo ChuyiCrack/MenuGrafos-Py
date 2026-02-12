@@ -74,12 +74,14 @@ class grapho:
 
 
     def mostrar_tabla_todas_rutas(self):
-        df = pd.DataFrame(columns=["Origen" , "Destino" , "Grado Origen" , "Grado Destino" , "Llego" , "LongCamino" , "Nodos Explorados" , "Ruta"])
+        #df = pd.DataFrame(columns=["Origen" , "Destino" , "Grado Origen" , "Grado Destino" , "Llego" , "LongCamino" , "Nodos Explorados" , "Ruta"])
+        dfMod=pd.DataFrame(columns=["Origen" , "Destino" , "Grado Origen" , "Grado Destino" ,'Llego', "Score" ])
         allRutas = self.obtener_arreglo_todas_rutas
         for fr , to in allRutas:
             camino = self.trayectoria_grado(fr,to)
-            df.loc[len(df)] = [fr, to, self.obtener_grado_nodo(fr) , self.obtener_grado_nodo(to),"Si" if camino else "No" , len(camino) if camino else 0,set(camino) if camino else [],self.mostrarCaminoBonito(camino)]
-        print(df)
+           # df.loc[len(df)] = [fr, to, self.obtener_grado_nodo(fr) , self.obtener_grado_nodo(to),"Si" if camino else "No" , len(camino) if camino else 0,set(camino) if camino else [],self.mostrarCaminoBonito(camino)]
+            dfMod.loc[len(dfMod)]=[fr, to, self.obtener_grado_nodo(fr) , self.obtener_grado_nodo(to),1 if camino else 0 , 10-len(camino) if camino else 10]
+        return(dfMod)
 
     @property
     def obetner_numero_total_rutas(self):
@@ -148,7 +150,7 @@ class grapho:
 
                 VisitedAristas.add(a)
 
-                if a.origen == actual:
+                if a.origen == curr:
                     siguiente = a.destino
                 else:
                     siguiente = a.origen
