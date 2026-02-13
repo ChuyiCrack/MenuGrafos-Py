@@ -7,10 +7,12 @@ start = grafo.obtener_nodo("A")
 end = grafo.obtener_nodo("H")
 
 df = grafo.rutas.tabla()
-
+print(df)
 # print(df[['Grado Origen','Grado Destino']]) 
 
-grafoA = grafo.obtener_nodo("A")
-grafoH = grafo.obtener_nodo("H")
+#Aqui solo es cambiarle los valores para obtener los nodos
+#En proximas versiones esto deberia de ser 2 inputs en el menu
+nodoInicial = grafo.obtener_nodo("A")
+nodoFinal = grafo.obtener_nodo("H")
 
 grafo.graficar_knn_y_recta(df, grafoA.grado(), grafoH.grado())

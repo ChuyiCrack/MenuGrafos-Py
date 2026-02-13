@@ -2,15 +2,15 @@ from math import factorial
 from matplotlib import pyplot as plt
 import pandas as pd
 from Grafo_7 import grafo7
-
+import numpy as np
 
 class Grapho:
 
     # propiedades
 
     def __init__(self):
-         self.nodos=[]
-         self.aristas=[]
+        self.nodos=[]
+        self.aristas=[]
     class Nodo:
         def __init__(self, valor):
             self.valor = valor
@@ -28,7 +28,7 @@ class Grapho:
         def __repr__(self):
                 return self.origen.valor + "-" + self.destino.valor
     def __repr__(self):
-         return "Nodos " + str(self.nodos) +" " + "Aristas "+ str(self.aristas)
+        return "Nodos " + str(self.nodos) +" " + "Aristas "+ str(self.aristas)
     
     # grafos predefinidos
 
@@ -71,10 +71,10 @@ class Grapho:
     
     # actualiza las conexiones de cada nodo según las aristas del grafo
     def actualizar_conexiones(self):
-         for i,n in enumerate(self.nodos):
-              for a in self.aristas:
-                   if(n==a.origen or n==a.destino):
-                        self.nodos[i].conexiones.append(a)
+        for i,n in enumerate(self.nodos):
+            for a in self.aristas:
+                if(n==a.origen or n==a.destino):
+                    self.nodos[i].conexiones.append(a)
 
     # retorna el indice en la lista de nodos del nodo con el valor dado, o None si no se encuentra
     def obtener_indice_nodo(self,targetValue):
@@ -257,7 +257,8 @@ class Grapho:
             allRutas = all()
             for fr , to in allRutas:
                 camino = self.trayectoria.mayor_grado(fr,to)
-                df.loc[len(df)] = [fr, to, fr.grado() , to.grado(),"Si" if camino else "No" , len(camino) if camino else 0,set(camino) if camino else [],self.camino_string(camino)]
+                #cambie el la existencia de camino a 1 y 0 para faciliutar manipulcion ----------> Anteriormente 'Si'/'No'
+                df.loc[len(df)] = [fr, to, self.obtener_grado_nodo(fr) , self.obtener_grado_nodo(to),1 if camino else 0 , 10-len(camino) if camino else 10,set(camino) if camino else {},self.camino_string(camino)]
             return(df)
         
         # retorna el numero total de rutas posibles entre nodos
@@ -286,47 +287,33 @@ class Grapho:
     # graficas 
 
 
-    def graficar_knn_y_recta(self, dataset, Gi_nuevo, GF_nuevo, umbral=6):
-        # Separar puntos por clase (llego)
-        Gi_1, GF_1 = [], []
-        Gi_0, GF_0 = [], []
+    def graficar_knn_y_recta(self, df, gradoInicialEvaluar, gradoFinalEvaluar, umbral=6):
 
-        # CORRECCIÓN: Usamos iterrows() para obtener el índice y la fila
-        for index, fila in dataset.iterrows():
-            # Ahora 'fila' es un objeto Series y puedes acceder por nombre
-            Gi = fila['Grado Origen']
-            GF = fila['Grado Destino'] # Nota: En tu tabla se llama 'Grado Destino', no 'Grado Final'
-            llego = fila['Llego']
+        #Esto lo que hace es hacer 2 dataFrame. un  agarrando los que si llegaron y el otro los que bo
+        siLlego=df[df['Llego']==1]
+        noLlego=df[df['Llego']==0]
 
-            if llego == "Si":
-                Gi_1.append(Gi); GF_1.append(GF)
-            else:
-                Gi_0.append(Gi); GF_0.append(GF)
+        plt.figure(figsize=(10,6))
 
-        # --- imprimir la ecuación de la recta heurística ---
-        print(f"Recta heurística: Gi + GF = {umbral}")
-        print(f"En forma despejada: GF = {umbral} - Gi")
+        #aqui se hacen 3 graficas de dispersion. La primera es de las que si llegaron marcandose con o
+        #La segunda es las que no llegaron marcando se con x y la ultima es la evaluacin que estamos haceindo marcandose con una estrella
+        plt.scatter(siLlego['Grado Origen'],siLlego['Grado Destino'],marker='o',color='blue',s=50,label='Llego')
+        plt.scatter(noLlego['Grado Origen'],noLlego['Grado Destino'],marker='x',color='red',s=50,label='no Llego')
+        plt.scatter(gradoInicialEvaluar,gradoFinalEvaluar,marker='*',color='yellow', edgecolors='black', s=250, label="Punto Evaluado")
 
-        # --- graficar puntos ---
-        plt.figure(figsize=(8, 6))
-        plt.scatter(Gi_1, GF_1, color='blue', marker='o', label="Llegó (Si)")
-        plt.scatter(Gi_0, GF_0, color='red', marker='x', label="No llegó (No)")
+        #ruta heuristica/La linea
+        #Esto lo que hace es que crea un numpy array que devuelve el valor minimo y maximo que en nuestro dataFrame
+        #El valorY dependera del umbral. En este momento no se que define el umbra XD. pero lo que hace en forma base es
+        # 6 - todo el numpy array que devolveria [6-gradoMin,6-gradoMax] 
+        valorX= np.array([df['Grado Origen'].min(),df['Grado Origen'].max()])
+        valorY=umbral-valorX
+        #esto es lo que hace nuestra linea/ el 'plot'
+        plt.plot(valorX,valorY,color='Black',linestyle='--',linewidth=2,label=f"Recta Heurística (Gi+GF={umbral})")
 
-        # Punto nuevo
-        plt.scatter([Gi_nuevo], [GF_nuevo], color='green', marker='*', s=200, label="Nuevo punto")
-
-        # --- graficar la recta ---
-        # Usamos los valores del dataset para el rango
-        gi_min = dataset['Grado Origen'].min()
-        gi_max = dataset['Grado Origen'].max()
-
-        x_vals = [gi_min, gi_max]
-        y_vals = [umbral - x for x in x_vals]
-        plt.plot(x_vals, y_vals, color='black', linestyle='--', label=f"Umbral (x+y={umbral})")
-
-        plt.xlabel("Grado Origen (Gi)")
-        plt.ylabel("Grado Destino (GF)")
-        plt.title("Clasificación de Rutas por Grados")
-        plt.legend()
-        plt.grid(True, linestyle=':', alpha=0.6)
+        #Esto es solo decoracion que el plot necesita 
+        plt.title('Diagrama de Dispersión con Clasificación y Recta')
+        plt.xlabel('Grado Origen (Gi)')
+        plt.ylabel('Grado Destino (GF)')
+        plt.legend(loc='lower left')
+        plt.grid(True, linestyle=':', alpha=0.7)
         plt.show()
