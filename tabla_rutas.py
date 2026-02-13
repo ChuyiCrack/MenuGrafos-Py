@@ -15,7 +15,4 @@ print(df)
 nodoInicial = grafo.obtener_nodo("A")
 nodoFinal = grafo.obtener_nodo("H")
 
-gradoInicial = grafo.obtener_grado_nodo(nodoInicial)
-gradoFinal = grafo.obtener_grado_nodo(nodoFinal)
-
-grafo.graficar_knn_y_recta(df, gradoInicial, gradoFinal)
+grafo.graficar_knn_y_recta(df, grafoA.grado(), grafoH.grado())
