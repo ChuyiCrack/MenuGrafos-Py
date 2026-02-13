@@ -9,15 +9,15 @@ class Grapho:
     # propiedades
 
     def __init__(self):
-         self.nodos=[]
-         self.aristas=[]
+        self.nodos=[]
+        self.aristas=[]
     class Nodo:
         def __init__(self, valor):
             self.valor = valor
             self.conexiones = []
         def __repr__(self):
             return self.valor
-       
+
     class Arista:
         def __init__(self, origen, destino):
             self.origen = origen
@@ -25,7 +25,7 @@ class Grapho:
         def __repr__(self):
                 return self.origen.valor + "-" + self.destino.valor
     def __repr__(self):
-         return "Nodos " + str(self.nodos) +" " + "Aristas "+ str(self.aristas)
+        return "Nodos " + str(self.nodos) +" " + "Aristas "+ str(self.aristas)
     
     # grafos predefinidos
 
@@ -68,10 +68,10 @@ class Grapho:
     
     # actualiza las conexiones de cada nodo según las aristas del grafo
     def actualizar_conexiones(self):
-         for i,n in enumerate(self.nodos):
-              for a in self.aristas:
-                   if(n==a.origen or n==a.destino):
-                        self.nodos[i].conexiones.append(a)
+        for i,n in enumerate(self.nodos):
+            for a in self.aristas:
+                if(n==a.origen or n==a.destino):
+                    self.nodos[i].conexiones.append(a)
 
     # retorna el indice en la lista de nodos del nodo con el valor dado, o None si no se encuentra
     def obtener_indice_nodo(self,targetValue):
@@ -257,7 +257,8 @@ class Grapho:
             allRutas = all()
             for fr , to in allRutas:
                 camino = self.trayectoria.mayor_grado(fr,to)
-                df.loc[len(df)] = [fr, to, self.obtener_grado_nodo(fr) , self.obtener_grado_nodo(to),"Si" if camino else "No" , len(camino) if camino else 0,set(camino) if camino else [],self.camino_string(camino)]
+                #cambie el la existencia de camino a 1 y 0 para faciliutar manipulcion ----------> Anteriormente 'Si'/'No'
+                df.loc[len(df)] = [fr, to, self.obtener_grado_nodo(fr) , self.obtener_grado_nodo(to),1 if camino else 0 , 10-len(camino) if camino else 10,set(camino) if camino else {},self.camino_string(camino)]
             return(df)
         
         # retorna el numero total de rutas posibles entre nodos
@@ -286,7 +287,7 @@ class Grapho:
     # graficas 
 
 
-    def graficar_knn_y_recta(self, dataset, Gi_nuevo, GF_nuevo, umbral=6):
+    def graficar_knn_y_recta(self, df, gradoInicialEvaluar, gradoFinalEvaluar, umbral=6):
         # Separar puntos por clase (llego)
         Gi_1, GF_1 = [], []
         Gi_0, GF_0 = [], []
