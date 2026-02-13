@@ -4,6 +4,7 @@ import pandas as pd
 from Grafo_7 import grafo7
 import numpy as np
 
+from collections import deque
 class Grapho:
 
     # propiedades
@@ -219,16 +220,62 @@ class Grapho:
 
             return camino
         
+        # TODO: distancia minima bfs al objetivo, profundidad bfs, vecinos comunes, ciclos del bfs (ciclos que tomo para terminar)
+        def bfs_camino(grafo, nodo_inicial, nodo_final) :
+            #Fila es una lista pro
+            fila= deque()
+            #Esta variable es un diccionario de valores que linkea cada nodo con su padre para podre rastrear el camino
+            padre_hijo_nodos= {}
+            vistados = set()
+
+            fila.append(nodo_inicial)
+            vistados.add(nodo_inicial)
+            #aqui en el diccionario creado se le pasa el nodo inicial que su valor sera none ya que es el iniico de nuestro camino que queremos trasar
+            padre_hijo_nodos[nodo_inicial]=None
+            
+            #minetras la fila no sea None 
+            while (fila):
+                nodoActual=fila.popleft()
+                print(nodoActual)
+                if nodoActual == nodo_final:
+                    return caminoBfs(padre_hijo_nodos,nodo_final)
+
+                for arista in nodoActual.conexiones:
+                    nodoVecino = arista.destino if arista.origen == nodoActual else arista.origen
+                    if nodoVecino not in vistados:
+                        vistados.add(nodoVecino)
+                        padre_hijo_nodos[nodoVecino]=nodoActual
+                        fila.append(nodoVecino)
+            #Se retonra none en caso de que no haya camino posible
+            return None
+
+        def caminoBfs(diccionarioNodos,nodoFinal):\
+            #lista del camino
+            camino=[]
+            #El nodo que vamos a empezar a anadir
+            nodoEvaluar=nodoFinal
+            #Esto va a dejar de anadirse en la primera posicion de la lista hasta que llegue al nodoInicial que su valor en el diccionario es None
+            while nodoEvaluar is not None:
+                #ejemplo dicc={a:b,b:c,c:d,d:None}
+                #se inserta a que tiene de valor b
+                # lugo cambiamos el nodo a evaluar a b. Se inserta b que tiene valor c. Asi hasta que tenga valor None
+                camino.insert(0,nodoEvaluar)
+                
+                nodoEvaluar=diccionarioNodos[nodoEvaluar]
+            
+            return camino
+
+
         class Helper: pass
         h = Helper()
         h.voraz = voraz
         h.no_visitado = no_visitado
         h.mayor_grado = mayor_grado
+        h.bfs=bfs_camino
         return h
     
 
     # rutas
-
     @property
     def rutas(self):
 
@@ -251,8 +298,7 @@ class Grapho:
                 print(f"{fr} --> {to}")
 
         # retorna un dataframe con todas las rutas posibles entre nodos, su grado de origen y destino, si se encontro una ruta usando la heuristica de mayor grado, la longitud de esa ruta, los nodos explorados y la ruta encontrada
-        def tabla():
-            # TODO: distancia minima bfs al objetivo, profundidad bfs, vecinos comunes, ciclos del bfs (ciclos que tomo para terminar) 
+        def tabla(): 
             df = pd.DataFrame(columns=["Origen" , "Destino" , "Grado Origen" , "Grado Destino" , "Llego" , "LongCamino" , "Nodos Explorados" , "Ruta"])
             allRutas = all()
             for fr , to in allRutas:
@@ -285,8 +331,6 @@ class Grapho:
 
 
     # graficas 
-
-
     def graficar_knn_y_recta(self, df, gradoInicialEvaluar, gradoFinalEvaluar, umbral=6):
 
         #Esto lo que hace es hacer 2 dataFrame. un  agarrando los que si llegaron y el otro los que bo
