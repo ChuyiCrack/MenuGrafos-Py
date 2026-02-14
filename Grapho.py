@@ -220,8 +220,8 @@ class Grapho:
 
             return camino
         
-        # TODO: distancia minima bfs al objetivo, profundidad bfs, vecinos comunes, ciclos del bfs (ciclos que tomo para terminar)
-        def bfs_camino(grafo, nodo_inicial, nodo_final) :
+        
+        def bfs( nodo_inicial, nodo_final) :
             #Fila es una lista pro
             fila= deque()
             #Esta variable es un diccionario de valores que linkea cada nodo con su padre para podre rastrear el camino
@@ -236,7 +236,6 @@ class Grapho:
             #minetras la fila no sea None 
             while (fila):
                 nodoActual=fila.popleft()
-                print(nodoActual)
                 if nodoActual == nodo_final:
                     return caminoBfs(padre_hijo_nodos,nodo_final)
 
@@ -271,7 +270,7 @@ class Grapho:
         h.voraz = voraz
         h.no_visitado = no_visitado
         h.mayor_grado = mayor_grado
-        h.bfs=bfs_camino
+        h.bfs=bfs
         return h
     
 
@@ -298,35 +297,77 @@ class Grapho:
                 print(f"{fr} --> {to}")
 
         # retorna un dataframe con todas las rutas posibles entre nodos, su grado de origen y destino, si se encontro una ruta usando la heuristica de mayor grado, la longitud de esa ruta, los nodos explorados y la ruta encontrada
-        def tabla(): 
-            df = pd.DataFrame(columns=["Origen" , "Destino" , "Grado Origen" , "Grado Destino" , "Llego" , "LongCamino" , "Nodos Explorados" , "Ruta"])
+        def tablaMayorGrado(): 
+            df = pd.DataFrame(columns=["Origen" , "Destino" , "Grado Origen" , "Grado Destino" , "Llego" , "Score" , "Nodos Explorados" , "Ruta"])
             allRutas = all()
             for fr , to in allRutas:
                 camino = self.trayectoria.mayor_grado(fr,to)
                 #cambie el la existencia de camino a 1 y 0 para faciliutar manipulcion ----------> Anteriormente 'Si'/'No'
-                df.loc[len(df)] = [fr, to, self.obtener_grado_nodo(fr) , self.obtener_grado_nodo(to),1 if camino else 0 , 10-len(camino) if camino else 10,set(camino) if camino else {},self.camino_string(camino)]
+                existeCamino=1 if camino else 0
+                Score= 10-len(camino) if camino else 10
+                nodosExplorados=set(camino) if camino else {}
+                df.loc[len(df)] = [fr, to, fr.grado() , to.grado(),existeCamino ,Score,nodosExplorados,self.camino_string(camino)]
             return(df)
         
+        def tablaDfs():
+            # TODO: distancia minima bfs al objetivo, profundidad bfs, vecinos comunes,  socre
+            df=pd.DataFrame(columns=["Origen" , "Destino" , "Grado Origen" , "Grado Destino" , "Llego" , "MinDistancia","vecinos Comunes"  ,'Score', "Ruta"])
+            for fr , to in all():
+
+                #En estos for pongo en una set cada uno de los nodos que estan conectados al nodo que estamos evaluando
+                #No tomo en cuenta los nodos fr y to como nodos vecinos. anuque no se si eso este bien XD
+                nodosVecinosFr=set()
+                nodosvecinosTo=set()
+                for ar in fr.conexiones:
+                    nodoAppend = ar.destino if ar.origen == fr else ar.origen
+                    if(nodoAppend==fr or nodoAppend==to):
+                        continue
+                    nodosVecinosFr.add(nodoAppend)
+                
+                for ar in to.conexiones:
+                    nodoAppend = ar.destino if ar.origen == fr else ar.origen
+                    if(nodoAppend==fr or nodoAppend==to):
+                        continue
+                    nodosvecinosTo.add(nodoAppend)
+                
+                
+                camino = self.trayectoria.bfs(fr,to)
+                #limpie los valores que le pasamos al dataFrame para que lo movamos en la vairable y no en el mismo dataFrame. Aparte asi se entinede mejopr que es cada cosa
+                existeCamino=1 if camino else 0
+                distanciaCamino=len(camino) if camino else 0
+                #Esto devuelve una set de la interseccion de ambos sets de nodos. Osea da los items que se repiten
+                vecinosComun=((nodosVecinosFr)&(nodosvecinosTo))
+                Score=(fr.grado()+to.grado()+len(vecinosComun))/(len(camino)+1)
+                df.loc[len(df)] = [fr, to, fr.grado() , to.grado(), existeCamino, distanciaCamino, len(vecinosComun) ,Score,self.camino_string(camino)]
+
+            return(df)
         # retorna el numero total de rutas posibles entre nodos
         def total_rutas():
             return int(factorial(len(self.nodos)) / factorial(len(self.nodos) - 2))
 
         # imprime todas las rutas posibles entre nodos, su grado de origen y destino, si se encontro una ruta usando la heuristica de mayor grado, la longitud de esa ruta, los nodos explorados y la ruta encontrada
-        def imprimir_rutas():
+        def imprimir_rutas_mayorGrado():
             allRutas = all()
             for fr , to in allRutas:
                 camino = self.trayectoria.mayor_grado(fr,to)
                 print(f"Ruta ({fr,to}) = {self.camino_string(camino)}")
 
+        def imprimir_rutas_Bfs():
+            allRutas = all()
+            for fr , to in allRutas:
+                camino = self.trayectoria.bfs(fr,to)
+                print(f"Ruta ({fr,to}) = {self.camino_string(camino)}")
 
         # retorna un objeto con las funciones anteriores para trabajar con las rutas del grafo
         class Helper: pass
         h = Helper()
         h.all = all
         h.imprimir_lista = imprimir_lista
-        h.tabla = tabla
+        h.tabla = tablaMayorGrado
         h.total_rutas = total_rutas
-        h.imprimir_rutas = imprimir_rutas
+        h.imprimir_rutas_mayorGrado = imprimir_rutas_mayorGrado
+        h.imprimir_rutas_Bfs=imprimir_rutas_Bfs
+        h.tablaDfs=tablaDfs
         return h
 
 

@@ -6,9 +6,13 @@ start = grafo.obtener_nodo("A")
 end = grafo.obtener_nodo("H")
 
 
-print(grafo.trayectoria.bfs(grafo,start,end))
-'''df = grafo.rutas.tabla()
-print(df)'''
+#print(grafo.trayectoria.bfs_camino(start,end))
+
+df=grafo.rutas.tablaDfs()
+print(df)
+
+#df = grafo.rutas.tabla()
+#print(df)
 # print(df[['Grado Origen','Grado Destino']]) 
 
 #Aqui solo es cambiarle los valores para obtener los nodos
